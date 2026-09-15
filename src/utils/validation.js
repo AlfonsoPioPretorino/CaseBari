@@ -1,4 +1,5 @@
-// Input validation. Only whitelisted fields are kept; anything else in the request body is ignored.
+// Input validation, run before every write. Only whitelisted fields are kept; anything else is ignored.
+// firestore.rules enforces the same limits on the database side.
 
 export class ValidationError extends Error {}
 
@@ -73,7 +74,8 @@ export function validateProperty(body = {}) {
 
   let floor = null
   if (!isBlank(body.floor)) {
-    floor = toNumber(body.floor, 'floor')
+    // `|| 0` turns -0 into 0 so it is stored as an integer.
+    floor = toNumber(body.floor, 'floor') || 0
     if (!Number.isInteger(floor) || floor < -10 || floor > 300) {
       throw new ValidationError('"floor" must be a whole number between -10 and 300')
     }

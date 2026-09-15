@@ -1,8 +1,9 @@
-import { resource } from './api.js'
+import { resource } from './firestore.js'
+import { validateProperty } from '../utils/validation.js'
 
-export const propertiesService = resource('properties')
+export const propertiesService = resource('properties', validateProperty)
 
-// Only the fields of the rental data model are ever sent to the API.
+// Only the fields of the rental data model are ever saved.
 export function toPropertyPayload(form, location) {
   return {
     title: form.title,

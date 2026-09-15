@@ -1,6 +1,7 @@
-import { resource } from './api.js'
+import { resource } from './firestore.js'
+import { validatePoint } from '../utils/validation.js'
 
-export const pointsService = resource('points')
+export const pointsService = resource('points', validatePoint)
 
 export function toPointPayload(form, location) {
   return {

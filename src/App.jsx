@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { Columns3, Crosshair, House, MapPin, Plus, Search, X } from 'lucide-react'
+import { Columns3, Crosshair, House, LogOut, MapPin, Plus, Search, X } from 'lucide-react'
 import CompareModal from './components/CompareModal.jsx'
 import ConfirmDialog from './components/ConfirmDialog.jsx'
 import FiltersPanel from './components/FiltersPanel.jsx'
@@ -30,7 +30,7 @@ const TAB_OF_VIEW = {
   filters: 'filters',
 }
 
-export default function App() {
+export default function App({ user, onSignOut }) {
   const properties = useCollection(propertiesService)
   const points = useCollection(pointsService)
 
@@ -477,6 +477,10 @@ export default function App() {
             <Columns3 size={16} />
             <span className="btn-label">Compare</span>
             {compareIds.length > 0 && <span className="badge">{compareIds.length}</span>}
+          </button>
+          <button type="button" className="btn toolbar-btn" onClick={onSignOut} title={`Signed in as ${user.email}. Sign out`}>
+            <LogOut size={16} />
+            <span className="btn-label">Sign out</span>
           </button>
         </div>
       </header>

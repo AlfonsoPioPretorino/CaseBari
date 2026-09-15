@@ -1,52 +1,31 @@
 import { useCallback, useEffect, useState } from 'react'
 
-// Loads a REST collection and keeps local state in sync after each successful API call.
+// Keeps a live copy of a Firestore collection. Changes made here or on another device
+// arrive through the subscription, so the CRUD helpers do not touch local state themselves.
 export function useCollection(service) {
   const [items, setItems] = useState([])
   const [status, setStatus] = useState('loading') // loading | ready | error
   const [error, setError] = useState(null)
-
-  const load = useCallback(async () => {
-    setStatus('loading')
-    setError(null)
-    try {
-      setItems(await service.list())
-      setStatus('ready')
-    } catch (err) {
-      setError(err.message)
-      setStatus('error')
-    }
-  }, [service])
+  const [attempt, setAttempt] = useState(0)
 
   useEffect(() => {
-    load()
-  }, [load])
+    setStatus('loading')
+    setError(null)
+    return service.subscribe(
+      (next) => {
+        setItems(next)
+        setStatus('ready')
+        setError(null)
+      },
+      (err) => {
+        setError(err.message)
+        setStatus('error')
+      },
+    )
+  }, [service, attempt])
 
-  const create = useCallback(
-    async (data) => {
-      const item = await service.create(data)
-      setItems((prev) => [...prev, item])
-      return item
-    },
-    [service],
-  )
+  // A failed subscription stops listening; retrying opens a new one.
+  const load = useCallback(() => setAttempt((n) => n + 1), [])
 
-  const update = useCallback(
-    async (id, data) => {
-      const item = await service.update(id, data)
-      setItems((prev) => prev.map((entry) => (entry.id === id ? item : entry)))
-      return item
-    },
-    [service],
-  )
-
-  const remove = useCallback(
-    async (id) => {
-      await service.remove(id)
-      setItems((prev) => prev.filter((entry) => entry.id !== id))
-    },
-    [service],
-  )
-
-  return { items, status, error, load, create, update, remove }
+  return { items, status, error, load, create: service.create, update: service.update, remove: service.remove }
 }
