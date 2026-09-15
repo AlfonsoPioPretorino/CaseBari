@@ -19,7 +19,7 @@ cp .env.example .env.local   # then fill in the VITE_FIREBASE_* values
 npm run dev
 ```
 
-Open http://localhost:5173 and sign in with Google.
+Open http://localhost:5173 and sign in with Google, or create an account with email and password.
 
 | Script | What it does |
 | --- | --- |
@@ -38,9 +38,10 @@ Everything below fits in the free **Spark** plan.
    (e.g. `europe-west8`, Milan; it cannot be changed later) and *production mode*.
 3. **Rules**: *Firestore → Rules*, replace the content with [`firestore.rules`](firestore.rules) and press *Publish*.
    (Or with the Firebase CLI: `firebase deploy --only firestore:rules --project <project-id>`.)
-4. **Google sign-in**: *Build → Authentication → Get started → Sign-in method → Google → Enable*.
+4. **Sign-in methods**: *Build → Authentication → Get started → Sign-in method*. Enable **Email/Password** (leave
+   *Email link* off) and **Google**.
 5. **Members**: in *Firestore → Data*, create a collection `members` and add one document per allowed person.
-   The **document ID is the Google account email in lowercase** (e.g. `someone@gmail.com`); the document can have any
+   The **document ID is the account email in lowercase** (e.g. `someone@gmail.com`); the document can have any
    field, e.g. `name: "Me"`. Nobody else can read or change the data.
 6. **Web app config**: *Project settings → General → Your apps → Web (`</>`)*. Register an app (no Hosting needed) and copy
    `apiKey`, `authDomain`, `projectId` and `appId` into `.env.local`.
@@ -88,10 +89,10 @@ On mobile, the side panel becomes a bottom sheet. Tap the handle or a tab to exp
     ├── App.jsx               # app state, layout, wiring between map and panels
     ├── config.js             # city, currency, tile/routing/geocoding settings
     ├── firebase.js           # Firebase app, Auth and Firestore from VITE_FIREBASE_* values
-    ├── components/           # AuthGate (sign-in / access screens), MapView, PropertyList/Details/Form,
+    ├── components/           # AuthGate (access / verify-email screens), SignInPanel (email, password, Google), MapView, PropertyList/Details/Form,
     │                         # PointList/Details/Form, DistanceSection, FiltersPanel, CompareModal, PlaceSearch, …
     ├── hooks/
-    │   ├── useAuth.js        # Google sign-in and membership check
+    │   ├── useAuth.js        # sign-in, registration, password reset, email verification, membership check
     │   ├── useCollection.js  # live list + CRUD for a Firestore collection
     │   └── useTravelMetrics.js # on-demand route distance/time and street paths (not stored)
     ├── services/
@@ -175,7 +176,10 @@ immediately updates every distance.
 
 ### How the data is protected
 
-- Only signed-in Google accounts with a verified email listed in `members` can read or write.
+- Only signed-in accounts with a verified email listed in `members` can read or write. Anyone can create an
+  account, but it sees nothing until its email is added to `members`.
+- Email/password accounts must open the verification link Firebase sends after registration. Without this, someone
+  could register a member's address before the member does. Google accounts are already verified.
 - The app validates every change before saving ([`src/utils/validation.js`](src/utils/validation.js)), and
   [`firestore.rules`](firestore.rules) enforces the same fields, types and limits on the server, so a malformed or
   unknown field is rejected even if it bypasses the app.

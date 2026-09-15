@@ -1,15 +1,17 @@
-import { House, LogIn, LogOut } from 'lucide-react'
+import { House, LogOut, MailCheck } from 'lucide-react'
 import App from '../App.jsx'
 import { config } from '../config.js'
 import { missingFirebaseSettings } from '../firebase.js'
+import { useAsyncAction } from '../hooks/useAsyncAction.js'
 import { useAuth } from '../hooks/useAuth.js'
+import SignInPanel from './SignInPanel.jsx'
 
-function AuthScreen({ title, children }) {
+function AuthScreen({ title, icon: Icon = House, children }) {
   return (
     <div className="auth-screen">
       <div className="auth-card">
         <span className="brand-mark">
-          <House size={18} />
+          <Icon size={18} />
         </span>
         <h1>{title}</h1>
         {children}
@@ -40,7 +42,8 @@ export default function AuthGate() {
 }
 
 function SignedInGate() {
-  const { status, user, error, signIn, signOut } = useAuth()
+  const session = useAuth()
+  const { status, user, error, signOut } = session
 
   if (status === 'member') return <App user={user} onSignOut={signOut} />
 
@@ -58,6 +61,17 @@ function SignedInGate() {
       Sign out
     </button>
   )
+
+  if (status === 'unverified') {
+    return (
+      <VerifyEmail
+        email={user.email}
+        onCheck={session.checkVerification}
+        onResend={session.resendVerification}
+        signOutButton={signOutButton}
+      />
+    )
+  }
 
   if (status === 'notMember') {
     return (
@@ -85,15 +99,53 @@ function SignedInGate() {
   return (
     <AuthScreen title={config.appName}>
       <p>Sign in to see your rentals and points in {config.cityName}.</p>
+      <SignInPanel
+        signInWithGoogle={session.signInWithGoogle}
+        signInWithEmail={session.signInWithEmail}
+        register={session.register}
+        resetPassword={session.resetPassword}
+      />
+    </AuthScreen>
+  )
+}
+
+function VerifyEmail({ email, onCheck, onResend, signOutButton }) {
+  const { busy, error, notice, run } = useAsyncAction()
+
+  const check = () =>
+    run(async () => {
+      if (!(await onCheck())) throw new Error('Your email is not verified yet. Open the link in the email, then try again.')
+    })
+
+  const resend = () =>
+    run(async () => {
+      await onResend()
+      return `A new verification email was sent to ${email}.`
+    })
+
+  return (
+    <AuthScreen title="Verify your email" icon={MailCheck}>
+      <p>
+        We sent a verification link to <strong>{email}</strong>. Open it (check your spam folder too), then come back and
+        press Continue.
+      </p>
       {error && (
         <div className="alert alert-error" role="alert">
           {error}
         </div>
       )}
-      <button type="button" className="btn btn-primary btn-block" onClick={signIn}>
-        <LogIn size={16} />
-        Sign in with Google
+      {notice && (
+        <div className="alert alert-info" role="status">
+          {notice}
+        </div>
+      )}
+      <button type="button" className="btn btn-primary btn-block" onClick={check} disabled={busy}>
+        {busy ? 'Please wait…' : 'I verified it, continue'}
       </button>
+      <button type="button" className="btn btn-block" onClick={resend} disabled={busy}>
+        Resend email
+      </button>
+      {signOutButton}
     </AuthScreen>
   )
 }
