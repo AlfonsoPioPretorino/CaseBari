@@ -1,0 +1,27 @@
+{
+  "properties": [
+    {
+      "id": "a94ba766-28e3-46ad-9cb9-c3d9259ec338",
+      "title": "Enza",
+      "address": "Via Benedetto Lorusso, Picone",
+      "latitude": 41.10842700348413,
+      "longitude": 16.866211383844174,
+      "rent": 950,
+      "floor": 5,
+      "url": "",
+      "notes": "",
+      "pros": [],
+      "cons": []
+    }
+  ],
+  "points": [
+    {
+      "id": "0c5a15e7-2126-4c12-b8c6-dd92024455f0",
+      "name": "DIB",
+      "category": "",
+      "notes": "",
+      "latitude": 41.1094233266852,
+      "longitude": 16.881155176682505
+    }
+  ]
+}
