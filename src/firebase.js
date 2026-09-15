@@ -6,11 +6,13 @@ import { getFirestore } from 'firebase/firestore'
 
 const env = import.meta.env
 
+// Trimmed because values pasted into CI variables easily pick up a trailing newline,
+// and a project ID with one makes Firestore report "the client is offline".
 const settings = {
-  VITE_FIREBASE_API_KEY: env.VITE_FIREBASE_API_KEY,
-  VITE_FIREBASE_AUTH_DOMAIN: env.VITE_FIREBASE_AUTH_DOMAIN,
-  VITE_FIREBASE_PROJECT_ID: env.VITE_FIREBASE_PROJECT_ID,
-  VITE_FIREBASE_APP_ID: env.VITE_FIREBASE_APP_ID,
+  VITE_FIREBASE_API_KEY: env.VITE_FIREBASE_API_KEY?.trim(),
+  VITE_FIREBASE_AUTH_DOMAIN: env.VITE_FIREBASE_AUTH_DOMAIN?.trim(),
+  VITE_FIREBASE_PROJECT_ID: env.VITE_FIREBASE_PROJECT_ID?.trim(),
+  VITE_FIREBASE_APP_ID: env.VITE_FIREBASE_APP_ID?.trim(),
 }
 
 export const missingFirebaseSettings = Object.keys(settings).filter((key) => !settings[key])
