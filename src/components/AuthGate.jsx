@@ -1,4 +1,4 @@
-import { House, LogOut, MailCheck } from 'lucide-react'
+import { House, LogOut, MailCheck, RotateCw } from 'lucide-react'
 import App from '../App.jsx'
 import { config } from '../config.js'
 import { missingFirebaseSettings } from '../firebase.js'
@@ -91,6 +91,10 @@ function SignedInGate() {
         <div className="alert alert-error" role="alert">
           {error}
         </div>
+        <button type="button" className="btn btn-primary btn-block" onClick={session.retry}>
+          <RotateCw size={16} />
+          Try again
+        </button>
         {signOutButton}
       </AuthScreen>
     )

@@ -5,12 +5,13 @@
 //   they are not exposed to the rest of the app.
 import { addDoc, collection, deleteDoc, doc, onSnapshot, serverTimestamp, updateDoc } from 'firebase/firestore'
 import { db } from '../firebase.js'
+import { OFFLINE_MESSAGE } from '../hooks/useAuth.js'
 import { ValidationError } from '../utils/validation.js'
 
 const MESSAGES = {
   'permission-denied': 'Your account does not have access to this data.',
   unauthenticated: 'You are signed out. Sign in again.',
-  unavailable: 'Cannot reach the database. Check your connection.',
+  unavailable: OFFLINE_MESSAGE,
   'not-found': 'This item no longer exists. It may have been deleted on another device.',
 }
 

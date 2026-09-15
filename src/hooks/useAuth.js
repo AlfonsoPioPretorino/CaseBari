@@ -15,6 +15,9 @@ import { auth, db } from '../firebase.js'
 
 const WRONG_CREDENTIALS = 'Wrong email or password.'
 
+export const OFFLINE_MESSAGE =
+  'Cannot reach the database. Browser privacy features and ad blockers often block it: in Brave, turn Shields off for this site (lion icon in the address bar); otherwise pause ad-blocking extensions, VPN or firewall for this site, then try again.'
+
 const MESSAGES = {
   'auth/unauthorized-domain':
     'This site’s domain is not authorized. Add it in Firebase console → Authentication → Settings → Authorized domains.',
@@ -78,7 +81,9 @@ export function useAuth() {
       const error =
         err.code === 'permission-denied'
           ? 'The database refused the access check. Make sure the rules from firestore.rules are published in Firebase console → Firestore → Rules.'
-          : `Could not check your access: ${err.message}`
+          : err.code === 'unavailable'
+            ? OFFLINE_MESSAGE
+            : `Could not check your access: ${err.message}`
       setState({ status: 'error', user, error })
     }
   }, [])
@@ -137,6 +142,9 @@ export function useAuth() {
 
   const signOut = useCallback(() => firebaseSignOut(auth), [])
 
+  // Repeats the access check, e.g. after a connection problem.
+  const retry = useCallback(() => auth.currentUser && evaluate(auth.currentUser), [evaluate])
+
   return {
     ...state,
     signInWithGoogle,
@@ -145,6 +153,7 @@ export function useAuth() {
     resetPassword,
     resendVerification,
     checkVerification,
+    retry,
     signOut,
   }
 }
